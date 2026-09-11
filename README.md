@@ -43,3 +43,5 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
+- Power-ups de velocidad (rayo dorado): duplican la velocidad de la nave durante 5 segundos
+- Los power-ups aparecen aleatoriamente en pantalla o al destruir asteroides (15 % de probabilidad)
