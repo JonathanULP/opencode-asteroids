@@ -29,6 +29,9 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
+| `Shift`   | Activar escudo |
+| `C`       | Cambiar skin (siguiente) |
+| `M`       | Abrir menú de skins      |
 
 ## Puntuación
 
@@ -44,4 +47,7 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - Power-ups de velocidad (rayo dorado): duplican la velocidad de la nave durante 5 segundos
+- Power-ups de triple disparo (3 líneas cian): disparan 3 balas con ángulo abierto durante 5 segundos
+- Escudo (`Shift`): te protege de un impacto y destruye el asteroide; tarda 8 s en recargar
 - Los power-ups aparecen aleatoriamente en pantalla o al destruir asteroides (15 % de probabilidad)
+- Sistema de skins: cicla con `C` o elige desde el menú de `M`; tu elección se guarda en el navegador
