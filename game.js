@@ -198,6 +198,8 @@ const SKINS = [
     id: 'clasica',
     name: 'CLASICA',
     boostStroke: '#ffd21f',
+    scale: 1,
+    scoreMulti: 1,
     shapes: [
       { points: [[20, 0], [-12, -9], [-7, 0], [-12, 9]], stroke: '#fff' },
     ],
@@ -207,6 +209,8 @@ const SKINS = [
     id: 'dardo',
     name: 'DARDO',
     boostStroke: '#ffd21f',
+    scale: 1,
+    scoreMulti: 1,
     shapes: [
       { points: [[24, 0], [-10, -5], [-6, 0], [-10, 5]], stroke: '#7fd4ff' },
       { points: [[16, 0], [-4, -2]], stroke: 'rgba(127,212,255,0.55)', lineWidth: 1, closed: false },
@@ -217,11 +221,25 @@ const SKINS = [
     id: 'bravucon',
     name: 'BRAVUCON',
     boostStroke: '#ffd21f',
+    scale: 1,
+    scoreMulti: 1,
     shapes: [
       { points: [[18, 0], [-15, -13], [-9, 0], [-15, 13]], stroke: '#fff', lineWidth: 1.8 },
       { points: [[11, 0], [-9, -7], [-5, 0], [-9, 7]], stroke: '#ffd21f', lineWidth: 1.2, fill: 'rgba(255,210,31,0.2)' },
     ],
     flame: { thrust: 'rgba(255,140,60,0.85)', boost: 'rgba(255,210,31,0.9)' },
+  },
+  {
+    id: 'dorada',
+    name: 'DORADA',
+    boostStroke: '#ffd700',
+    scale: 2,
+    scoreMulti: 2,
+    shapes: [
+      { points: [[20, 0], [-12, -9], [-7, 0], [-12, 9]], stroke: '#ffd700', lineWidth: 2, fill: 'rgba(255,215,0,0.15)' },
+      { points: [[8, 0], [-5, -3], [-3, 0], [-5, 3]], stroke: 'rgba(255,215,0,0.6)', lineWidth: 1, fill: 'rgba(255,215,0,0.2)' },
+    ],
+    flame: { thrust: 'rgba(255,215,0,0.85)', boost: 'rgba(255,255,180,0.9)' },
   },
 ];
 
@@ -237,11 +255,13 @@ function setSkin(i) {
   localStorage.setItem('asteroids.skin', SKINS[selectedSkin].id);
   skinToast = SKINS[selectedSkin].name;
   skinToastTimer = 1.5;
+  ship.radius = 12 * (SKINS[selectedSkin].scale || 1);
 }
 
 function drawShipShapes(skin, scale, boost) {
+  const s = scale * (skin.scale || 1);
   ctx.save();
-  if (scale !== 1) ctx.scale(scale, scale);
+  if (s !== 1) ctx.scale(s, s);
   for (const sh of skin.shapes) {
     ctx.beginPath();
     ctx.moveTo(sh.points[0][0], sh.points[0][1]);
@@ -249,7 +269,7 @@ function drawShipShapes(skin, scale, boost) {
       ctx.lineTo(sh.points[i][0], sh.points[i][1]);
     if (sh.closed !== false) ctx.closePath();
     ctx.strokeStyle = boost ? skin.boostStroke : sh.stroke;
-    ctx.lineWidth   = (sh.lineWidth || 1.5) / scale;
+    ctx.lineWidth   = (sh.lineWidth || 1.5) / s;
     ctx.lineJoin    = 'round';
     if (sh.fill) { ctx.fillStyle = sh.fill; ctx.fill(); }
     ctx.stroke();
@@ -267,7 +287,7 @@ class Ship {
     this.angle  = -Math.PI / 2;
     this.vx     = 0;
     this.vy     = 0;
-    this.radius = 12;
+    this.radius = 12 * (SKINS[selectedSkin].scale || 1);
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
@@ -335,8 +355,9 @@ class Ship {
     // Estela dorada durante el boost
     if (this.speedBoost && this.thrusting && Math.random() > 0.3) {
       const back = Math.PI + this.angle;
-      const ox = this.x + Math.cos(back) * 12;
-      const oy = this.y + Math.sin(back) * 12;
+      const scale = SKINS[selectedSkin].scale || 1;
+      const ox = this.x + Math.cos(back) * 12 * scale;
+      const oy = this.y + Math.sin(back) * 12 * scale;
       const p = new Particle(ox, oy, '255,210,31');
       p.vx = Math.cos(back) * rand(50, 130);
       p.vy = Math.sin(back) * rand(50, 130);
@@ -349,7 +370,7 @@ class Ship {
   tryShoot() {
     if (this.shootCooldown > 0 || this.dead) return [];
     this.shootCooldown = 0.2;
-    const NOSE = 21;
+    const NOSE = 21 * (SKINS[selectedSkin].scale || 1);
     const ox = this.x + Math.cos(this.angle) * NOSE;
     const oy = this.y + Math.sin(this.angle) * NOSE;
     if (this.tripleShot) {
@@ -369,6 +390,7 @@ class Ship {
     if (this.invincible > 0 && Math.floor(this.invincible * 8) % 2 === 0) return;
 
     const skin = SKINS[selectedSkin];
+    const skinScale = skin.scale || 1;
 
     ctx.save();
     ctx.translate(this.x, this.y);
@@ -380,9 +402,9 @@ class Ship {
     if (this.thrusting && Math.random() > 0.35) {
       const flame = this.speedBoost ? skin.flame.boost : skin.flame.thrust;
       ctx.beginPath();
-      ctx.moveTo(-8, -4);
-      ctx.lineTo(-8 - rand(6, 14), 0);
-      ctx.lineTo(-8,  4);
+      ctx.moveTo(-8 * skinScale, -4 * skinScale);
+      ctx.lineTo(-8 * skinScale - rand(6, 14) * skinScale, 0);
+      ctx.lineTo(-8 * skinScale, 4 * skinScale);
       ctx.strokeStyle = flame;
       ctx.lineWidth   = 1.5;
       ctx.stroke();
@@ -392,7 +414,7 @@ class Ship {
     if (this.shieldActive) {
       const pulse = 0.3 + Math.sin(Date.now() * 0.008) * 0.12;
       ctx.beginPath();
-      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.arc(0, 0, 22 * skinScale, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(0, 180, 255, ${pulse.toFixed(2)})`;
       ctx.fill();
       ctx.strokeStyle = `rgba(0, 220, 255, ${(pulse + 0.2).toFixed(2)})`;
@@ -491,6 +513,10 @@ function explode(x, y, count = 8, color) {
   for (let i = 0; i < count; i++) particles.push(new Particle(x, y, color));
 }
 
+function addScore(size) {
+  score += POINTS[size] * (SKINS[selectedSkin].scoreMulti || 1);
+}
+
 function killShip() {
   explode(ship.x, ship.y, 14);
   ship.dead = true;
@@ -572,7 +598,7 @@ function update(dt) {
       if (!a.dead && !b.dead && dist(b, a) < a.radius) {
         b.dead = true;
         a.dead = true;
-        score += POINTS[a.size];
+        addScore(a.size);
         explode(a.x, a.y, a.size * 5);
         if (Math.random() < POWERUP_CHANCE) powerups.push(randomPowerUp());
         newAsteroids.push(...a.split());
@@ -589,7 +615,7 @@ function update(dt) {
       if (dist(ship, a) < ship.radius + a.radius * 0.82) {
         if (ship.shieldActive) {
           a.dead = true;
-          score += POINTS[a.size];
+          addScore(a.size);
           explode(a.x, a.y, a.size * 5, '0,180,255');
           ship.shieldActive = false;
           ship.shieldCooldown = 8;
@@ -628,7 +654,7 @@ function drawLifeIcon(x, y) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-Math.PI / 2);
-  drawShipShapes(SKINS[selectedSkin], 0.5, false);
+  drawShipShapes(SKINS[selectedSkin], 0.5 / (SKINS[selectedSkin].scale || 1), false);
   ctx.restore();
 }
 
@@ -788,6 +814,12 @@ function drawSkinMenu() {
     }
     ctx.fillStyle = hover ? '#ffd21f' : 'rgba(255,255,255,0.85)';
     ctx.fillText(SKINS[i].name, W / 2 - 95, y + 5);
+    if ((SKINS[i].scoreMulti || 1) > 1) {
+      ctx.fillStyle = '#ffd700';
+      ctx.font = '11px monospace';
+      ctx.fillText('PUNTOS x2', W / 2 - 95, y + 20);
+      ctx.font = '16px monospace';
+    }
     if (current && !hover) {
       ctx.fillStyle = 'rgba(255,255,255,0.4)';
       ctx.font = '11px monospace';
