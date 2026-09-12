@@ -11,7 +11,7 @@ TITLE=$(jq -r '.issue.title' <<<"$issue")
 BODY=$(jq -r '.issue.body // ""' <<<"$issue")
 AUTHOR=$(jq -r '.issue.user.login' <<<"$issue")
 ROLE=$(jq -r '.issue.author_association' <<<"$issue")
-CREATED=$(jq -r '.issue.created_at | .[0:10] + " " + .[11:16] + " UTC"' <<<"$issue")
+CREATED=$(jq -r '(.issue.created_at // "") | if . == "" then "desconocida" else .[0:10] + " " + .[11:16] + " UTC" end' <<<"$issue")
 URL=$(jq -r '.issue.html_url' <<<"$issue")
 
 case "$ROLE" in
