@@ -1,0 +1,19 @@
+name: issue-automation
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  automate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Etiquetar y comentar el issue
+        run: bash .github/scripts/issue-automation.sh
