@@ -47,6 +47,7 @@ else
   LABEL='sin-clasificar'
 fi
 
+echo "PASO: etiquetando el issue"
 if ! gh label list --json name --jq '.[].name' | grep -qx "$LABEL"; then
   case "$LABEL" in
     bug) gh label create 'bug' --color 'd73a4a' --description 'Algo no funciona como se espera' ;;
@@ -76,9 +77,11 @@ check() {
   fi
 }
 
+echo "PASO: leyendo entorno del repositorio"
 DEFAULT_BRANCH=$(gh api "repos/$REPO" --jq '.default_branch')
-LAST_COMMIT=$(gh api "repos/$REPO/commits/$DEFAULT_BRANCH" --jq '"\(.sha[0:7]) :: \(.commit.message | split("\n")[0])"')
+LAST_COMMIT=$(gh api "repos/$REPO/commits/$DEFAULT_BRANCH?per_page=1" --jq '"\(.[0].sha[0:7]) :: \(.[0].commit.message | split("\n")[0])"')
 
+echo "PASO: generando comentario"
 COMMENT_FILE="$RUNNER_TEMP/issue-comment.md"
 : > "$COMMENT_FILE"
 
@@ -133,4 +136,6 @@ PATCHES
   echo "> Comentario generado automáticamente para la revisión; el texto original del issue no fue modificado."
 } >> "$COMMENT_FILE"
 
+echo "PASO: publicando comentario"
 gh issue comment "$NUMBER" --body-file "$COMMENT_FILE"
+echo "COMPLETADO: issue #$NUMBER procesado"
