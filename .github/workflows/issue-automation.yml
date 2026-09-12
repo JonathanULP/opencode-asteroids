@@ -17,3 +17,5 @@ jobs:
 
       - name: Etiquetar y comentar el issue
         run: bash .github/scripts/issue-automation.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
