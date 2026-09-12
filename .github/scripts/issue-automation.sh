@@ -5,14 +5,23 @@ REPO="${GITHUB_REPOSITORY:?GITHUB_REPOSITORY no definido}"
 EVENT_PATH="${GITHUB_EVENT_PATH:?GITHUB_EVENT_PATH no definido}"
 RUNNER_TEMP="${RUNNER_TEMP:-.tmp}"
 
-issue=$(jq '.issue' "$EVENT_PATH")
-NUMBER=$(jq -r '.issue.number' <<<"$issue")
-TITLE=$(jq -r '.issue.title' <<<"$issue")
-BODY=$(jq -r '.issue.body // ""' <<<"$issue")
-AUTHOR=$(jq -r '.issue.user.login' <<<"$issue")
-ROLE=$(jq -r '.issue.author_association' <<<"$issue")
-CREATED=$(jq -r '(.issue.created_at // "") | if . == "" then "desconocida" else .[0:10] + " " + .[11:16] + " UTC" end' <<<"$issue")
-URL=$(jq -r '.issue.html_url' <<<"$issue")
+ACTION=$(jq -r '.action // "(sin action)"' "$EVENT_PATH")
+
+if ! jq -e '.issue | type == "object" and (.number | type == "number")' "$EVENT_PATH" >/dev/null 2>&1; then
+  echo "ERROR: evento ${GITHUB_EVENT_NAME} (action: ${ACTION}) sin issue valido."
+  echo "Claves del payload: $(jq -r 'keys | join(", ")' "$EVENT_PATH")"
+  echo "--- Previa del payload ---"
+  head -c 2000 "$EVENT_PATH"
+  exit 1
+fi
+
+NUMBER=$(jq -r '.issue.number' "$EVENT_PATH")
+TITLE=$(jq -r '.issue.title' "$EVENT_PATH")
+BODY=$(jq -r '.issue.body // ""' "$EVENT_PATH")
+AUTHOR=$(jq -r '.issue.user.login' "$EVENT_PATH")
+ROLE=$(jq -r '.issue.author_association' "$EVENT_PATH")
+CREATED=$(jq -r '(.issue.created_at // "") | if . == "" then "desconocida" else .[0:10] + " " + .[11:16] + " UTC" end' "$EVENT_PATH")
+URL=$(jq -r '.issue.html_url' "$EVENT_PATH")
 
 case "$ROLE" in
   OWNER) ROLE_S='owner' ;;
