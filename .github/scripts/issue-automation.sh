@@ -11,7 +11,7 @@ TITLE=$(jq -r '.issue.title' <<<"$issue")
 BODY=$(jq -r '.issue.body // ""' <<<"$issue")
 AUTHOR=$(jq -r '.issue.user.login' <<<"$issue")
 ROLE=$(jq -r '.issue.author_association' <<<"$issue")
-CREATED=$(jq -r '.issue.created_at | fromdateiso8601 | strftime("%d/%m/%Y %H:%M")' <<<"$issue")
+CREATED=$(jq -r '.issue.created_at | .[0:10] + " " + .[11:16] + " UTC"' <<<"$issue")
 URL=$(jq -r '.issue.html_url' <<<"$issue")
 
 case "$ROLE" in
